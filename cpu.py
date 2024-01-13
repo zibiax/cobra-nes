@@ -1,6 +1,5 @@
 from enum import IntFlag, auto, Enum
 from typing import List, Tuple
-import match
 
 class CpuFlags(IntFlag):
     CARRY = auto()
@@ -474,7 +473,7 @@ class CPU:
                 case 0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1:
                     self.sbc(opcode.mode)
                 case 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31:
-                    self.and(opcode.mode)
+                    self.and_(opcode.mode)
                 case 0x49 | 0x45 | 0x55 | 0x4d | 0x5d | 0x59 | 0x41 | 0x51:
                     self.eor(opcode.mode)
                 case 0x09 | 0x05 | 0x15 | 0x0d | 0x1d | 0x19 | 0x01 | 0x11:
@@ -573,7 +572,7 @@ class CPU:
                 case 0x98:
                     self.register_a = self.register_y
                     self.update_zero_and_negative_flags(self.register_a)
-                default:
+                case _:
                     raise ValueError(f"OpCode {hex(code)} is not recognized")
 
             if program_counter_state == self.program_counter:
