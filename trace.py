@@ -3,9 +3,10 @@ from cpu import CPU
 from opcodes import OpCode, CPU_OPS_CODES
 
 def trace(cpu: CPU) -> str:
+    opcode = OpCode
     opcodes = CPU_OPS_CODES
     code = cpu.mem_read(cpu.program_counter)
-    ops = opcodes.get(code)
+    ops = opcode.get(code)
     if ops is None:
         raise ValueError(f"Unknown opcode {code}")
     begin = cpu.program_counter
