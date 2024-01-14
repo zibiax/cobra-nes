@@ -1,6 +1,6 @@
 from enum import Enum
 from collections import namedtuple
-from cpu import CPU, AddressingMode
+from cpu import AddressingMode
 
 OpCode = namedtuple('Opcode', ['code', 'mnemonic', 'len', 'cycles', 'mode'])
 
