@@ -1,5 +1,6 @@
 from enum import IntFlag, auto, Enum
 from typing import List, Tuple
+from bus import Bus
 
 class CpuFlags(IntFlag):
     CARRY = auto()

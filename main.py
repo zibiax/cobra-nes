@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import QUIT, KEYDOWN
 import sys
 import random
-# from bus import Bus
+from bus import Bus
 #from cartridge import Rom
 from cpu import CPU
 from opcodes import *
