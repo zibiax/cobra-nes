@@ -1,4 +1,4 @@
-NES_TAG = [0x4E, 0x45, 0x53, 0x1A]
+NES_TAG = b'NES\x1A'
 PRG_ROM_PAGE_SIZE = 16384
 CHR_ROM_PAGE_SIZE = 8192
 
@@ -49,28 +49,4 @@ class Rom:
             screen_mirroring=screen_mirroring
             )
 
-# Test functions
-def create_rom(test_rom):
-    result = []
-    result.extend(test_rom['header'])
-    if test_rom.get('trainer'):
-        result.extend(test_rom['trainer'])
-    result.extend(test_rom['pgp_rom'])
-    result.extend(test_rom['chr_rom'])
-    return result
 
-def test_rom():
-    test_rom_data = create_rom({
-        'header': [0x4E, 0x45, 0x53, 0x1A, 0x02, 0x01, 0x31, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        'trainer': None,
-        'pgp_rom': [1] * (2 * PRG_ROM_PAGE_SIZE),
-        'chr_rom': [2] * (1 * CHR_ROM_PAGE_SIZE),
-    })
-    return Rom.new(test_rom_data)
-
-# Example usage
-rom = test_rom()
-print(rom.prg_rom)
-print(rom.chr_rom)
-print(rom.mapper)
-print(rom.screen_mirroring)

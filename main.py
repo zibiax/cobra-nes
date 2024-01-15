@@ -3,7 +3,7 @@ from pygame.locals import QUIT, KEYDOWN
 import sys
 import random
 from bus import Bus
-#from cartridge import Rom
+from cartridge import Rom
 from cpu import CPU
 from opcodes import *
 from trace import *
@@ -56,22 +56,26 @@ def read_screen_state(cpu, frame):
 
 # handle user input
 def handle_user_input(cpu, events):
-    if event in events:
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit(0)
-        elif event.type == KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+    for event in events:
+        match event.type:
+            case pygame.QUIT:
                 pygame.quit()
-                sys,exit(0)
-            elif event.key == pygame.K_w:
-                cpu.mem_write(0xff, ord('w'))
-            elif event.key == pygame.K_s:
-                cpu.mem_write(0xff, ord('s'))
-            elif event.key == pygame.K_a:
-                cpu.mem_write(0xff, ord('a'))
-            elif event.key == pygame.K_d:
-                cpu.mem_write(0xff, ord('d'))
+                sys.exit(0)
+            case pygame.KEYDOWN:
+                match event.key:
+                    case pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit(0)
+                    case pygame.K_w:
+                        cpu.mem_write(0xff, ord('w'))
+                    case pygame.K_s:
+                        cpu.mem_write(0xff, ord('s'))
+                    case pygame.K_a:
+                        cpu.mem_write(0xff, ord('a'))
+                    case pygame.K_d:
+                        cpu.mem_write(0xff, ord('d'))
+                    case _:
+                        pass 
 
 def main():
     pygame.init()
@@ -82,7 +86,7 @@ def main():
     # load game function
     with open("snake.nes", "rb") as f:
         bytes = f.read()
-    rom = Rom(bytes)
+    rom = Rom.new(bytes)
     bus = Bus(rom)
     cpu = CPU(bus)
     cpu.reset()
@@ -103,7 +107,6 @@ def main():
 
         pygame.display.flip()
         clock.tick(60)
-        pygame.time.delay(70)
 
     pygame.quit()
 
