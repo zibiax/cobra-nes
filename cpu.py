@@ -1,6 +1,7 @@
 from enum import IntFlag, auto, Enum
 from typing import List, Tuple
 from bus import Bus
+import opcodes
 
 class CpuFlags(IntFlag):
     CARRY = auto()
@@ -64,7 +65,7 @@ class CPU:
         if mode == AddressingMode.ZeroPage_X:
             pos = self.mem_read(addr)
             return (pos + self.register_x) & 0xff
-            
+
         if mode == AddressingMode.ZeroPage_Y:
             pos = self.mem_read(addr)
             return (pos + self.register_y) & 0xff
@@ -91,11 +92,12 @@ class CPU:
             deref_base = (hi << 8) | lo
             return (deref_base + self.register_y) & 0xFFFF
 
+
         raise ValueError(f"Mode {mode} is not supported")
 
     def get_operand_address(self, mode):
         if mode == AddressingMode.Immediate:
-            return self.program_counter
+            return self.program_counter  # Immediate mode returns the current program counter
         else:
             return self.get_absolute_address(mode, self.program_counter)
 
@@ -423,18 +425,17 @@ class CPU:
            self.program_counter = jump_addr
 
     def run(self):
-       # Assuming run_with_callback is defined elsewhere
        self.run_with_callback(lambda _: None)
     
     def run_with_callback(self, callback):
-        opcodes = opcodes.OPCODES_MAP
+        opcodes_map = opcodes.OPCODES_MAP
 
         while True:
             code = self.mem_read(self.program_counter)
             self.program_counter += 1
             program_counter_state = self.program_counter
 
-            opcode = opcodes.get(code)
+            opcode = opcodes_map.get(code)
             if opcode is None:
                 raise ValueError(f"OpCode {hex(code)} is not recognized")
 
@@ -448,19 +449,19 @@ class CPU:
                 case 0x00:
                     return
                 case 0xd8:
-                    self.status.remove(CpuFlags.DECIMAL_MODE)
+                    self.status &= ~CpuFlags.DECIMAL_MODE
                 case 0x58:
-                    self.status.remove(CpuFlags.INTERRUPT_DISABLE)
+                    self.status &= ~CpuFlags.INTERRUPT_DISABLE
                 case 0xb8:
-                    self.status.remove(CpuFlags.OVERFLOW)
+                    self.status &= ~CpuFlags.OVERFLOW
                 case 0x18:
                     self.clear_carry_flag()
                 case 0x38:
                     self.set_carry_flag()
                 case 0x78:
-                    self.status.insert(CpuFlags.INTERRUPT_DISABLE)
+                    self.status |= CpuFlags.INTERRUPT_DISABLE
                 case 0xf8:
-                    self.status.insert(CpuFlags.DECIMAL_MODE)
+                    self.status |= CpuFlags.DECIMAL_MODE
                 case 0x48:
                     self.stack_push(self.register_a)
                 case 0x68:
@@ -525,26 +526,26 @@ class CPU:
                 case 0x60:
                     self.program_counter = self.stack_pop_u16() + 1
                 case 0x40:
-                    self.status.bits = self.stack_pop()
-                    self.status.remove(CpuFlags.BREAK)
-                    self.status.insert(CpuFlags.BREAK2)
+                    self.status = self.stack_pop()
+                    self.status &= ~CpuFlags.BREAK
+                    self.status |= CpuFlags.BREAK2
                     self.program_counter = self.stack_pop_u16()
                 case 0xd0:
-                    self.branch(not self.status.contains(CpuFlags.ZERO))
+                    self.branch(not (self.status & CpuFlags.ZERO))
                 case 0x70:
-                    self.branch(self.status.contains(CpuFlags.OVERFLOW))
+                    self.branch(self.status & CpuFlags.OVERFLOW)
                 case 0x50:
-                    self.branch(not self.status.contains(CpuFlags.OVERFLOW))
+                    self.branch(not (self.status & CpuFlags.OVERFLOW))
                 case 0x10:
-                    self.branch(not self.status.contains(CpuFlags.NEGATIVE))
+                    self.branch(not (self.status & CpuFlags.NEGATIVE))
                 case 0x30:
-                    self.branch(self.status.contains(CpuFlags.NEGATIVE))
+                    self.branch(self.status & CpuFlags.NEGATIVE)
                 case 0xf0:
-                    self.branch(self.status.contains(CpuFlags.ZERO))
+                    self.branch(self.status & CpuFlags.ZERO)
                 case 0xb0:
-                    self.branch(self.status.contains(CpuFlags.CARRY))
+                    self.branch(self.status & CpuFlags.CARRY)
                 case 0x90:
-                    self.branch(not self.status.contains(CpuFlags.CARRY))
+                    self.branch(not (self.status & CpuFlags.CARRY))
                 case 0x24 | 0x2c:
                     self.bit(opcode.mode)
                 case 0x85 | 0x95 | 0x8d | 0x9d | 0x99 | 0x81 | 0x91:
